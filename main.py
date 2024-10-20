@@ -13,7 +13,7 @@ the recording device at the finish line by a long cable or a radio connection (w
 If the latter, there is no need to adjust time delay.
 If the former (sound is transmitted through open air), user must adjust for the delay via the entries in the audio tab.
 
-ALL ABOUT THE APP: openphotofinish.blogspot.com
+ALL ABOUT THE APP: openphotofinish.blogspot.com  &  github.com/mybaskin/openphotofinish
 """
 print("Loading az bekle...")
 import tkinter
@@ -322,6 +322,10 @@ class EditableTable(tk.Frame):
         self.import_button.bind("<Enter>", self.enter_import)
         self.import_button.bind("<Leave>", self.leave_import)
 
+        self.paste_button = tk.Button(self.center_frame, text = "Paste from Clipboard", bd = 0, highlightthickness=0, font = font.Font(family="Cooper Black", size=11, slant="italic"), command = self.paste_from_clipboard)
+        self.paste_button.pack(side = tk.LEFT, padx = 5)
+        # to export the results as excel or text file
+
         image_data_bytes = base64.b64decode(video_l_bt)
         image = Image.open(BytesIO(image_data_bytes))
         self.video_l_icon = ImageTk.PhotoImage(image)
@@ -589,6 +593,9 @@ class EditableTable(tk.Frame):
             self.update_table()
         else:
             print("Matrix row length does not match headers length")
+
+    def paste_from_clipboard(self, event = 0):
+        self.root.import_heat(mode=1)
 
     def copy_to_clipboard(self, event=0):
         text = ""
@@ -2794,9 +2801,10 @@ class Instance:
             if self.direction.get() == 0:
                 frames = [cv2.flip(i, 1) for i in frames]
 
+            #self.background_change = True
             if self.background_change == True:
 
-                self.resize_co = 5
+                self.resize_co = 2
                 # Resize the sample frame once
                 sample = len(frames)-90
                 frames[sample] = cv2.resize(frames[sample],
@@ -3241,62 +3249,82 @@ class Instance:
         image_thread = threading.Thread(target = image_in_thread)
         image_thread.start()
 
-    def import_heat(self):
-        file = filedialog.askopenfilename()
-        if file.split(".")[-1] == "xlsx":
+    def import_heat(self, mode = 0):
+        if mode == 0:
+            file = filedialog.askopenfilename()
+        if mode == 0 and file.split(".")[-1] != "xlsx":
+            return
+
+        if mode == 0:
             dataframe = openpyxl.load_workbook(file)
             dataframe1 = dataframe.active
+        else:
+            textdata = pyperclip.paste()
+            rows = textdata.split("\n")
+            dataframe1 = [row.split("\t") for row in rows]
+            if not dataframe1[-1][0]:
+                del dataframe1[-1]
+            print(dataframe1)
 
-            import_heat_w = tk.Toplevel(self.root)
-            import_heat_w.wm_iconphoto(False, self.main_icon)
-            import_heat_w.wm_title("Import Heat...")
+        import_heat_w = tk.Toplevel(self.root)
+        import_heat_w.wm_iconphoto(False, self.main_icon)
+        import_heat_w.wm_title("Import Heat...")
 
-            columns = []
-            column_names = [0,"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","V","W","X","Y","Z"]
-            for col in range(1, dataframe1.max_column+1):
-                tk.Label(import_heat_w, text="Column "+column_names[col]+":").pack()
-                globals()[f'col{col}'] =  ttk.Combobox(import_heat_w,values = self.default_parameters,state="readonly", width = 9)
-                globals()[f'col{col}'].set("nan")
-                globals()[f'col{col}'].pack()
-                columns.append(globals()[f'col{col}'])
+        columns = []
+        column_names = [0,"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","V","W","X","Y","Z"]
+        if mode == 0:
+            range_end = dataframe1.max_column
+        else:
+            range_end = max(len(i) for i in dataframe1)
+            print(dataframe1)
+        for col in range(1, range_end+1):
+            tk.Label(import_heat_w, text="Column "+column_names[col]+":").pack()
+            globals()[f'col{col}'] =  ttk.Combobox(import_heat_w,values = self.default_parameters,state="readonly", width = 9)
+            globals()[f'col{col}'].set(self.default_parameters[col-1])
+            #globals()[f'col{col}'].set("nan")
+            globals()[f'col{col}'].pack()
+            columns.append(globals()[f'col{col}'])
 
 
 
-            def done_with_heat():
+        def done_with_heat():
+            if mode == 0:
                 df = pd.read_excel(file)
 
                 matrix = df.values
-                athletes = []
-                for i in range(len(matrix)):
-                    athletes.append(dict(self.default_athlete))
-                    #self.private_id += 1
-                    #athletes[-1]["priv_id"] = int(self.private_id)
-                    for j in range(len(matrix[0])):
-                        try:
-                            athletes[i][globals()[f'col{j + 1}'].get()] = str(matrix[i][j])
-                        except:
-                            pass
-                        print(matrix[i][j])
+            else:
+                matrix = dataframe1
+            athletes = []
+            for i in range(len(matrix)):
+                athletes.append(dict(self.default_athlete))
+                #self.private_id += 1
+                #athletes[-1]["priv_id"] = int(self.private_id)
+                for j in range(len(matrix[i])):
+                    try:
+                        athletes[i][globals()[f'col{j + 1}'].get()] = str(matrix[i][j])
+                    except:
+                        pass
+                    print(matrix[i][j])
 
-                for i in range(len(matrix)):
-                    athletes[i] = list(athletes[i].values())
+            for i in range(len(matrix)):
+                athletes[i] = list(athletes[i].values())
 
-                self.excel_import = True
+            self.excel_import = True
 
-                import_heat_w.destroy()
-
+            import_heat_w.destroy()
+            if mode == 0:
                 self.table.change_title(str(file).split("/")[-1].split(".")[0]+", Wind: "+str(self.wind_var)+" m/s")
 
 
 
 
-                self.table.set_data_from_matrix(athletes)
-            tk.Button(import_heat_w,text="Ok",command= done_with_heat).pack()
+            self.table.set_data_from_matrix(athletes)
+        tk.Button(import_heat_w,text="Ok",command= done_with_heat).pack()
 
-            heat_height = 42*len(columns)+50
-            import_heat_w.geometry("250x"+str(heat_height))
+        heat_height = 42*len(columns)+50
+        import_heat_w.geometry("250x"+str(heat_height))
 
-            import_heat_w.mainloop()
+        import_heat_w.mainloop()
 
     def view_pf(self):
         self.view_pf_var = True
