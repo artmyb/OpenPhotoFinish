@@ -72,7 +72,9 @@ There are also 4.5 ways to export results.
    ![11](https://github.com/user-attachments/assets/93098a96-edb0-4f19-979c-7835921da9a6)
 
 a) Saving as excel
+
 b) Saving as text
+
 c1) Saving the table as PNG
 ![gt1](https://github.com/user-attachments/assets/a29ffa2a-0f43-4401-8a2e-3a9c4c0a1fd8)
 
