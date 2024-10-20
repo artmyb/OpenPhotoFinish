@@ -28,3 +28,53 @@ _Example: In a 100 m race, all the athletes finished the race about between 11 s
 After you are set up with times and FPS increase, you can hit "Generate Image"
 
 ![3](https://github.com/user-attachments/assets/6308715c-34ca-421d-a09e-8034984905bc)
+
+# Image Alignment
+On the left frame, you can adjust the alignment of the cropped frame. For the creation of the photo-finish image, the part inside the red dashed rectangle is used.
+The non-dashed red line must align with the _leading edge_ of the finish line.
+You can click and drag the rectangle. You can adjust the width of the rectangle by scrolling, adjust the height of the rectangle by ctrl+scrolling.
+You can adjust the rotation of the frame by hovering on the "rotation" entry and scrolling.
+All of the parameters can be adjusted by inputting the parameters into the entries as well.
+
+![4](https://github.com/user-attachments/assets/8bcf0112-2560-44c6-a4d8-c227149d027a)
+
+You must click _Update Image_ after any variable change on the Image Alignment section.
+# Closer Look At The Frames
+By riht-clicking on a part of the photo-finish image, you can view the full frame of that moment on the upper screen.
+The rightmost frame is at the moment you clicked on the photo-finish image. Moving backwards, the frames go forward in time, up to 1.5 seconds.
+
+![5](https://github.com/user-attachments/assets/4c38a606-5cec-4d12-886a-d8797cac59a4)
+
+# Determining Race Times
+All you have do to determine the race times for each athlete is to place the hashlines on the foremost part af athletes' torsos; by clicking.
+![6](https://github.com/user-attachments/assets/bafdabcc-3d74-4a70-871c-cbb62b9060a3)
+_You can save the photo-finsih image as a PNG by the export button, which is the rightmost of the buttons on the bottom._
+
+# Creating Results Table
+There are basically three ways to create a results table.
+1) By clicking the "+" button and adding the data by typing.
+![7](https://github.com/user-attachments/assets/f133f7af-f516-436e-bd3a-7b758fcc0e53)
+
+2) By pasting data from clipboard, which should be copied from a spreadsheet (excel or google sheets)
+3) By importing an excel file that includes the data of the heat.
+![8](https://github.com/user-attachments/assets/99a86d62-720e-4700-816d-d85f4d7cd4c3)
+
+![9](https://github.com/user-attachments/assets/55ef60c9-5837-4aa6-8f9a-16e3b97cd806)
+
+Whatever the import method is, you can choose the times by double-clicking on the times cells and selecting the time via the combobox opened. The times are loaded according to where you have placed the hashlines on the photo-finish image.
+You can click the filmstrip button to view the photo-finish image to better-recognize athletes while creating the table.
+![10](https://github.com/user-attachments/assets/6a8c8def-a6e2-4713-a131-1399d499b898)
+
+# Exporting Results
+There are also 4.5 ways to export results.
+1) By clicking "Copy to Clipboard" to paste to a spreadsheet afterwards.
+2) By clicking export button on the rightmost and;
+   ![11](https://github.com/user-attachments/assets/93098a96-edb0-4f19-979c-7835921da9a6)
+
+a) Saving as excel
+b) Saving as text
+c1) Saving the table as PNG
+![gt1](https://github.com/user-attachments/assets/a29ffa2a-0f43-4401-8a2e-3a9c4c0a1fd8)
+
+c2) Saving the table and the photo-finish image (combined) as PNG
+![gt2](https://github.com/user-attachments/assets/c540dcc8-2d94-4939-957e-709b41ef1d0f)
