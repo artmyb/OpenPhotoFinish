@@ -80,3 +80,13 @@ c1) Saving the table as PNG
 
 c2) Saving the table and the photo-finish image (combined) as PNG
 ![gt2](https://github.com/user-attachments/assets/c540dcc8-2d94-4939-957e-709b41ef1d0f)
+
+# How Accurate is OpenPhotoFinish?
+For a mobile video recording file, the audio data's timestamps and image frames' timestamps, which this app uses, are already prefectly aligned.
+For a recording device with 60 FPS frame rate, the maximum error is simple: 1/60 (0.017) seconds.
+Remember that this app has Frame Interpolation feature, which creates new frames in between existing frames, which artificially increases frame rate by up to x6.
+With maximum 60 FPS recording and maximum frame interpolation, the accuracy level drops down to 0.004 seconds (4 ms)
+To attain the theoretical accuracy level, the only thing to calibrate is to measure the speed of in open air, and know the distance between the start piston and the recording device.
+How to measure speed of sound? Put the sound recorders (phones?) side by side and shot the gun. Now bring one of them 100 m apart and shot the gun again. 
+Import the recordings, adjust them so that the first shots are aligned. Now, the time difference between the second shots is the time it requires for sound to travel 100m.
+Now you can do the math and find speed of sound.
