@@ -13,7 +13,7 @@ the recording device at the finish line by a long cable or a radio connection (w
 If the latter, there is no need to adjust time delay.
 If the former (sound is transmitted through open air), user must adjust for the delay via the entries in the audio tab.
 
-ALL ABOUT THE APP: openphotofinish.blogspot.com  &  github.com/mybaskin/openphotofinish
+ALL ABOUT THE APP: openphotofinish.blogspot.com  &  github.com/artmyb/openphotofinish
 """
 print("Loading az bekle...")
 import tkinter
@@ -508,7 +508,9 @@ class EditableTable(tk.Frame):
                 if str(row_data["ID"]) == values[1]:  # Assuming ID is unique
                     row_data[self.headers[col_index]] = new_value
                     break
+                print(col_index)
 
+            print(self.data)
             self.entry.destroy()
             self.entry = None
         except Exception as e:
@@ -586,13 +588,18 @@ class EditableTable(tk.Frame):
     def set_data_from_matrix(self, matrix):
         self.data = []
 
-        if all(len(row) == len(self.headers) for row in matrix):
+        # If already in dictionary form, no need to match headers
+        if isinstance(matrix[0], dict):
+            self.data = matrix
+        elif all(len(row) == len(self.headers) for row in matrix):
             for row in matrix:
                 row_data = {self.headers[i]: row[i] for i in range(len(self.headers))}
                 self.data.append(row_data)
-            self.update_table()
         else:
             print("Matrix row length does not match headers length")
+            return
+
+        self.update_table()
 
     def paste_from_clipboard(self, event = 0):
         self.root.import_heat(mode=1)
@@ -1367,7 +1374,7 @@ class Instance:
 
             self.current_time_audio = 0
 
-            self.default_athlete =  {"Lane":"nan","ID":"nan","Name":"nan","Date of Birth": "nan", "Affiliation":"nan","License":"nan","Time":"nan","Place": "nan"}
+            self.default_athlete =  {"Lane":"nan","ID":"nan","Name":"nan","Date of Birth": "nan", "Affiliation":"nan","License":"nan","Time":"nan","Place": "nan", "priv_id":0}
             self.default_parameters = ["Lane","ID","Name","Date of Birth","Affiliation","License","Time","Place"]
             self.background_change = False
 
@@ -3249,81 +3256,70 @@ class Instance:
         image_thread = threading.Thread(target = image_in_thread)
         image_thread.start()
 
-    def import_heat(self, mode = 0):
-        if mode == 0:
-            file = filedialog.askopenfilename()
-        if mode == 0 and file.split(".")[-1] != "xlsx":
-            return
+    def import_heat(self, mode=0):
+        import pandas as pd
+        from tkinter import filedialog
 
         if mode == 0:
-            dataframe = openpyxl.load_workbook(file)
-            dataframe1 = dataframe.active
+            file = filedialog.askopenfilename()
+            if not file or file.split(".")[-1] != "xlsx":
+                return
+            dataframe = pd.read_excel(file, header=0)
+            matrix = dataframe.values.tolist()
+            headers_from_file = list(dataframe.columns)
         else:
+            import pyperclip
             textdata = pyperclip.paste()
-            rows = textdata.split("\n")
-            dataframe1 = [row.split("\t") for row in rows]
-            if not dataframe1[-1][0]:
-                del dataframe1[-1]
-            print(dataframe1)
+            rows = textdata.strip().split("\n")
+            matrix = [row.split("\t") for row in rows if row.strip()]
+            #headers_from_file = matrix.pop(0)
 
         import_heat_w = tk.Toplevel(self.root)
         import_heat_w.wm_iconphoto(False, self.main_icon)
-        import_heat_w.wm_title("Import Heat...")
+        import_heat_w.title("Import Heat")
 
         columns = []
-        column_names = [0,"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","V","W","X","Y","Z"]
-        if mode == 0:
-            range_end = dataframe1.max_column
-        else:
-            range_end = max(len(i) for i in dataframe1)
-            print(dataframe1)
-        for col in range(1, range_end+1):
-            tk.Label(import_heat_w, text="Column "+column_names[col]+":").pack()
-            globals()[f'col{col}'] =  ttk.Combobox(import_heat_w,values = self.default_parameters,state="readonly", width = 9)
-            globals()[f'col{col}'].set(self.default_parameters[col-1])
-            #globals()[f'col{col}'].set("nan")
-            globals()[f'col{col}'].pack()
-            columns.append(globals()[f'col{col}'])
+        column_letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+                          "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+                          "U", "V", "W", "X", "Y", "Z"]
 
+        column_count = max(len(row) for row in matrix)
+        for col in range(column_count):
+            label = tk.Label(import_heat_w, text=f"Column {column_letters[col]}:")
+            label.pack()
 
+            combo = ttk.Combobox(import_heat_w, values=self.default_parameters,
+                                 state="readonly", width=15)
+            default_value = self.default_parameters[col] if col < len(self.default_parameters) else \
+            self.default_parameters[0]
+            combo.set(default_value)
+            combo.pack()
+
+            columns.append(combo)
 
         def done_with_heat():
-            if mode == 0:
-                df = pd.read_excel(file)
+            selected_headers = [combo.get() for combo in columns]
+            selected_headers = [h for h in selected_headers if h and h not in ("nan", "-")]
 
-                matrix = df.values
-            else:
-                matrix = dataframe1
             athletes = []
-            for i in range(len(matrix)):
-                athletes.append(dict(self.default_athlete))
-                #self.private_id += 1
-                #athletes[-1]["priv_id"] = int(self.private_id)
-                for j in range(len(matrix[i])):
-                    try:
-                        athletes[i][globals()[f'col{j + 1}'].get()] = str(matrix[i][j])
-                    except:
-                        pass
-                    print(matrix[i][j])
-
-            for i in range(len(matrix)):
-                athletes[i] = list(athletes[i].values())
+            for row in matrix:
+                row_data = {}
+                for i in range(min(len(selected_headers), len(row))):
+                    row_data[selected_headers[i]] = str(row[i])
+                athletes.append(row_data)
 
             self.excel_import = True
-
             import_heat_w.destroy()
+
             if mode == 0:
-                self.table.change_title(str(file).split("/")[-1].split(".")[0]+", Wind: "+str(self.wind_var)+" m/s")
-
-
-
+                self.table.change_title(str(file).split("/")[-1].split(".")[0] +
+                                        ", Wind: " + str(self.wind_var) + " m/s")
 
             self.table.set_data_from_matrix(athletes)
-        tk.Button(import_heat_w,text="Ok",command= done_with_heat).pack()
 
-        heat_height = 42*len(columns)+50
-        import_heat_w.geometry("250x"+str(heat_height))
-
+        tk.Button(import_heat_w, text="Ok", command=done_with_heat).pack(pady=10)
+        height = 42 * len(columns) + 60
+        import_heat_w.geometry(f"250x{height}")
         import_heat_w.mainloop()
 
     def view_pf(self):
